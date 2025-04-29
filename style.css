@@ -68,3 +68,48 @@ button:hover {
   background-color: #00FF00;
   color: #000000;
 }
+/* Mobil cihazlar için özel ayarlar */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  #terminal {
+    padding: 10px;
+    max-width: 90%;
+    left: 5%;
+    right: 5%;
+  }
+
+  #globe-container canvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  #news-panel,
+  #science-panel,
+  #weather-panel {
+    width: 90%;
+    right: 5%;
+    left: 5%;
+    font-size: 13px;
+    top: auto;
+    bottom: 10px;
+    margin-bottom: 10px;
+  }
+
+  #popup {
+    width: 90%;
+    font-size: 16px;
+    top: 20px;
+    left: 5%;
+    right: 5%;
+    transform: none;
+  }
+
+  .notification {
+    width: 90%;
+    right: 5%;
+    font-size: 12px;
+  }
+}
