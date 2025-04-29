@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HumanStockLive - Gen Identity System</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      background-color: black;
+      overflow-x: hidden;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    /* Matrix Popup */
+    #popup {
+      position: fixed;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 2px solid #00ff00;
+      padding: 20px;
+      width: 400px;
+      background-color: rgba(0,0,0,0.8);
+      box-shadow: 0 0 15px #00ff00;
+      color: #00ff00;
+      font-size: 18px;
+      z-index: 9999;
+    }
+
+    /* Terminal */
+    #terminal {
+      padding: 20px;
+      color: #00ff00;
+      font-size: 16px;
+    }
+
+    /* News Panel */
+    #news-panel {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 300px;
+      height: 180px;
+      background-color: rgba(0, 0, 0, 0.5);
+      border: 1px solid #00ff00;
+      padding: 10px;
+      font-size: 14px;
+      overflow: hidden;
+      box-shadow: 0 0 10px #00ff00;
+      z-index: 9997;
+    }
+
+    #news-panel h2 {
+      font-size: 16px;
+      margin-top: 0;
+    }
+
+    #news-content {
+      animation: scrollNews 20s linear infinite;
+    }
+
+    @keyframes scrollNews {
+      0% { transform: translateY(0%); }
+      100% { transform: translateY(-50%); }
+    }
+
+    #news-content p {
+      margin: 5px 0;
+    }
+
+    /* Science Panel */
+    #science-panel {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 300px;
+      height: 180px;
+      background-color: rgba(0, 0, 0, 0.5);
+      border: 1px solid #00ff00;
+      padding: 10px;
+      font-size: 14px;
+      overflow: hidden;
+      box-shadow: 0 0 10px #00ff00;
+      z-index: 9997;
+    }
+
+    #science-panel h2 {
+      font-size: 16px;
+      margin-top: 0;
+    }
+
+    #science-content {
+      animation: scrollScience 20s linear infinite;
+    }
+
+    #science-panel:hover #science-content {
+      animation-play-state: paused;
+    }
+
+    @keyframes scrollScience {
+      0% { transform: translateY(0%); }
+      100% { transform: translateY(-50%); }
+    }
+
+    #science-content p {
+      margin: 5px 0;
+    }
+
+    /* Notification Popup */
+    .notification {
+      position: fixed;
+      bottom: 210px;
+      right: 20px;
+      background-color: rgba(0,0,0,0.7);
+      border: 1px solid #00ff00;
+      color: #00ff00;
+      padding: 10px 15px;
+      margin-top: 10px;
+      font-size: 14px;
+      box-shadow: 0 0 10px #00ff00;
+      opacity: 0;
+      animation: slideIn 0.5s forwards, fadeOut 0.5s 6.5s forwards;
+      z-index: 9999;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; transform: translateX(100%); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="globe-container"></div>
+
+<div id="terminal">
+  <h1>HumanStockLive // Gen Identity System</h1>
+
+  <form id="userForm">
+    <label>Name:</label><br>
+    <input type="text" id="name" required><br><br>
+
+    <label>Birth Date (YYYY-MM-DD):</label><br>
+    <input type="date" id="birthDate" required><br><br>
+
+    <label>Ethnicity:</label><br>
+    <input type="text" id="ethnicity" required><br><br>
+
+    <label>Country:</label><br>
+    <input type="text" id="country" required><br><br>
+
+    <button type="submit">Generate Identity</button>
+  </form>
+
+  <button id="downloadBtn">Download Certificate (PDF)</button>
+
+  <pre id="output"></pre>
+</div>
+
+<!-- Matrix Popup -->
+<div id="popup">
+  <div id="textArea"></div>
+</div>
+
+<!-- News Panel -->
+<div id="news-panel">
+  <h2>🌍 Global News</h2>
+  <div id="news-content"></div>
+</div>
+
+<!-- Science Panel -->
+<div id="science-panel">
+  <h2>🧬 Scientific Facts</h2>
+  <div id="science-content">
+    <p>- Işık hızı: 299.792.458 m/s</p>
+    <p>- DNA molekülü 2 metre uzunluğundadır.</p>
+    <p>- Güneş sistemi 4.6 milyar yaşındadır.</p>
+    <p>- İnsan beyni 86 milyar nöron içerir.</p>
+    <p>- Evrende 2 trilyon galaksi olduğu tahmin ediliyor.</p>
+  </div>
+</div>
+
+<script src="https://unpkg.com/three@0.152.2/build/three.min.js"></script>
+<script src="https://unpkg.com/globe.gl"></script>
+
+<script>
+const lines = [
+  "[GENETIC HUMAN ID CARD]",
+  "- ID No: █████",
+  "- Entry Time: █████",
+  "- Adaptation Score: █████",
+  "- Threat Level: █████"
+];
+
+const textArea = document.getElementById('textArea');
+let lineIndex = 0;
+let charIndex = 0;
+
+function typeLine() {
+  if (lineIndex >= lines.length) return;
+
+  const line = lines[lineIndex];
+  if (charIndex < line.length) {
+    textArea.innerHTML += line[charIndex];
+    charIndex++;
+    setTimeout(typeLine, 50);
+  } else {
+    textArea.innerHTML += "<br>";
+    charIndex = 0;
+    lineIndex++;
+    setTimeout(typeLine, 300);
+  }
+}
+
+window.onload = () => {
+  setTimeout(typeLine, 500);
+  startNotifications();
+  startCrimeReminders();
+  loadNews();
+};
+
+const notifications = [
+  "🌡️ Hava Durumu: Bugün sıcaklık +2°C",
+  "😔 Ruh Hali: İnsanlar genel olarak yorgun.",
+  "🔥 Kriminal Olaylar: Suç oranı %3 arttı.",
+  "🍀 Şans Yüzdesi: Bugün %47 şanslısınız!"
+];
+
+function startNotifications() {
+  setInterval(() => {
+    createNotification(notifications[Math.floor(Math.random() * notifications.length)]);
+  }, 10000);
+}
+
+function createNotification(text) {
+  const notification = document.createElement('div');
+  notification.className = 'notification';
+  notification.innerText = text;
+  document.body.appendChild(notification);
+
+  setTimeout(() => {
+    notification.remove();
+  }, 7000);
+}
+
+const crimes = [
+  "🕵️ 14 Kasım 1889 — Sherlock Holmes yayımlandı.",
+  "🔪 1 Mart 1932 — Lindbergh bebeği kaçırıldı.",
+  "⚖️ 20 Kasım 1945 — Nürnberg Duruşmaları başladı.",
+  "🔥 26 Nisan 1986 — Çernobil Nükleer Felaketi.",
+  "⚰️ 11 Eylül 2001 — Dünya Ticaret Merkezi saldırısı.",
+  "💥 7 Temmuz 2005 — Londra Metro Bombalamaları."
+];
+
+function startCrimeReminders() {
+  setInterval(() => {
+    createNotification(crimes[Math.floor(Math.random() * crimes.length)]);
+  }, 30000);
+}
+
+function loadNews() {
+  fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://rss.cnn.com/rss/edition.rss'))
+    .then(response => response.json())
+    .then(data => {
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(data.contents, "text/xml");
+      const items = xml.querySelectorAll("item");
+      const newsContent = document.getElementById('news-content');
+      newsContent.innerHTML = '';
+
+      for (let i = 0; i < 5; i++) {
+        const title = items[i].querySelector("title").textContent;
+        const p = document.createElement('p');
+        p.innerHTML = "📰 " + title;
+        newsContent.appendChild(p);
+      }
+    });
+}
+</script>
+
+<script src="script.js"></script>
+
+</body>
+</html>
