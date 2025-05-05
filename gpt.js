@@ -1,12 +1,10 @@
-// gpt.js (veya index.js olarak da kullanılabilir)
-
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
-require("dotenv").config();
+require("dotenv").config({ path: "/etc/secrets/.env" });
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 10000;
 
 app.use(cors());
 app.use(express.json());
@@ -34,11 +32,10 @@ app.post("/api/gpt", async (req, res) => {
 
     res.json({ output: response.data.choices[0].message.content });
   } catch (error) {
-    console.error("GPT API hatası:", error.response?.data || error.message);
     res.status(500).json({ error: error.message });
   }
 });
 
 app.listen(port, () => {
-  console.log(`\u2705 GPT Proxy API çalışıyor: http://localhost:${port}`);
+  console.log(`✅ GPT Proxy API çalışıyor: http://localhost:${port}`);
 });
