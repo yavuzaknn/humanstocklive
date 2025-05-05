@@ -1,5 +1,5 @@
 async function fetchAIInsight(inputText) {
-  const response = await fetch("https://humanstocklive-1.onrender.com/api/gpt", {
+  const response = await fetch("https://humanstocklive-2.onrender.com/api/gpt", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
