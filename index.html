@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HumanStockLive - Gen Identity System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="terminal">
+    <h1>HumanStockLive // Gen Identity System</h1>
+    <form id="userForm">
+      <label>Name:</label><br>
+      <input type="text" id="name" required><br><br>
+      <label>Birth Date (YYYY-MM-DD):</label><br>
+      <input type="date" id="birthDate" required><br><br>
+      <label>Ethnicity:</label><br>
+      <input type="text" id="ethnicity" required><br><br>
+      <label>Country:</label><br>
+      <input type="text" id="country" required><br><br>
+      <button type="submit">Generate Identity</button>
+    </form>
+    <button id="downloadBtn">Download Certificate (PDF)</button>
+    <pre id="output">⏳ Dünya nüfusu verisi yükleniyor...</pre>
+  </div>
+
+  <div id="ai-insight">
+    <h3>🧠 Genetic AI Insight</h3>
+    <p id="insight-text">Genetik potansiyeliniz analiz ediliyor...</p>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
