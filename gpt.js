@@ -36,6 +36,14 @@ app.post("/api/gpt", async (req, res) => {
   }
 });
 
+
+
+// Ana sayfa kontrolü
+app.get("/", (req, res) => {
+  res.send("✅ HumanStock GPT API aktif!");
+});
+
+
 app.listen(port, () => {
   console.log(`✅ GPT Proxy API çalışıyor: http://localhost:${port}`);
 });
