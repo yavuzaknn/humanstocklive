@@ -4,8 +4,47 @@
   <meta charset="UTF-8">
   <title>HumanStockLive - Gen Identity System</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">// 🌍 Dünya görselini daha gerçekçi yap ve ülke marker'ı ekle
+const world = Globe()(document.getElementById('globe-container'))
+  .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+  .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+  .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
+  .pointOfView({ lat: 20, lng: 0, altitude: 2.2 })
+  .showAtmosphere(true)
+  .atmosphereColor('#3a228a')
+  .atmosphereAltitude(0.25)
+  .onGlobeReady(() => {
+    world.controls().autoRotate = true;
+    world.controls().autoRotateSpeed = 0.7;
+  });
 
+function addCountryMarker(lat, lng, label) {
+  world
+    .customLayerData([{ lat, lng, label }])
+    .customThreeObject(d => {
+      const sprite = new THREE.Sprite(
+        new THREE.SpriteMaterial({ color: '#00ff00' })
+      );
+      sprite.scale.set(0.5, 0.5, 1);
+      return sprite;
+    })
+    .customThreeObjectUpdate((obj, d) => {
+      obj.position.setFromSphericalCoords(101, Math.PI / 2 - d.lat * Math.PI / 180, d.lng * Math.PI / 180);
+      obj.__data = d;
+    });
+}
+
+async function locateCountry(countryName) {
+  try {
+    const response = await fetch(`https://restcountries.com/v3.1/name/${countryName}`);
+    const data = await response.json();
+    const latlng = data[0].latlng;
+    addCountryMarker(latlng[0], latlng[1], countryName);
+  } catch (error) {
+    console.error("Ülke koordinatları alınamadı:", error);
+  }
+}
+</script>
   <style>
     body {
       margin: 0;
@@ -13,127 +52,18 @@
       overflow-x: hidden;
       font-family: 'Courier New', Courier, monospace;
     }
-
-    /* Matrix Popup */
-    #popup {
-      position: fixed;
-      top: 50px;
-      left: 50%;
-      transform: translateX(-50%);
-      border: 2px solid #00ff00;
-      padding: 20px;
-      width: 400px;
-      background-color: rgba(0,0,0,0.8);
-      box-shadow: 0 0 15px #00ff00;
-      color: #00ff00;
-      font-size: 18px;
-      z-index: 9999;
-    }
-
-    /* Terminal */
     #terminal {
       padding: 20px;
       color: #00ff00;
       font-size: 16px;
     }
-
-    /* News Panel */
-    #news-panel {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 300px;
-      height: 180px;
-      background-color: rgba(0, 0, 0, 0.5);
-      border: 1px solid #00ff00;
-      padding: 10px;
-      font-size: 14px;
-      overflow: hidden;
-      box-shadow: 0 0 10px #00ff00;
-      z-index: 9997;
-    }
-
-    #news-panel h2 {
-      font-size: 16px;
-      margin-top: 0;
-    }
-
-    #news-content {
-      animation: scrollNews 20s linear infinite;
-    }
-
-    @keyframes scrollNews {
-      0% { transform: translateY(0%); }
-      100% { transform: translateY(-50%); }
-    }
-
-    #news-content p {
-      margin: 5px 0;
-    }
-
-    /* Science Panel */
-    #science-panel {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      width: 300px;
-      height: 180px;
-      background-color: rgba(0, 0, 0, 0.5);
-      border: 1px solid #00ff00;
-      padding: 10px;
-      font-size: 14px;
-      overflow: hidden;
-      box-shadow: 0 0 10px #00ff00;
-      z-index: 9997;
-    }
-
-    #science-panel h2 {
-      font-size: 16px;
-      margin-top: 0;
-    }
-
-    #science-content {
-      animation: scrollScience 20s linear infinite;
-    }
-
-    #science-panel:hover #science-content {
-      animation-play-state: paused;
-    }
-
-    @keyframes scrollScience {
-      0% { transform: translateY(0%); }
-      100% { transform: translateY(-50%); }
-    }
-
-    #science-content p {
-      margin: 5px 0;
-    }
-
-    /* Notification Popup */
-    .notification {
-      position: fixed;
-      bottom: 210px;
-      right: 20px;
-      background-color: rgba(0,0,0,0.7);
-      border: 1px solid #00ff00;
-      color: #00ff00;
-      padding: 10px 15px;
-      margin-top: 10px;
-      font-size: 14px;
-      box-shadow: 0 0 10px #00ff00;
-      opacity: 0;
-      animation: slideIn 0.5s forwards, fadeOut 0.5s 6.5s forwards;
-      z-index: 9999;
-    }
-
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-
-    @keyframes fadeOut {
-      from { opacity: 1; }
-      to { opacity: 0; transform: translateX(100%); }
+    #ai-insight {
+      background-color: #111;
+      color: #33ff33;
+      padding: 20px;
+      margin: 20px;
+      border: 1px solid #0f0;
+      font-family: 'Courier New', Courier, monospace;
     }
   </style>
 </head>
@@ -162,21 +92,23 @@
 
   <button id="downloadBtn">Download Certificate (PDF)</button>
 
-  <pre id="output"></pre>
+  <pre id="output">⏳ Dünya nüfusu verisi yükleniyor...</pre>
 </div>
 
-<!-- Matrix Popup -->
 <div id="popup">
   <div id="textArea"></div>
 </div>
 
-<!-- News Panel -->
+<div id="ai-insight">
+  <h3>🧠 Genetic AI Insight</h3>
+  <p id="insight-text">Genetik potansiyeliniz analiz ediliyor...</p>
+</div>
+
 <div id="news-panel">
   <h2>🌍 Global News</h2>
   <div id="news-content"></div>
 </div>
 
-<!-- Science Panel -->
 <div id="science-panel">
   <h2>🧬 Scientific Facts</h2>
   <div id="science-content">
@@ -225,68 +157,96 @@ window.onload = () => {
   startNotifications();
   startCrimeReminders();
   loadNews();
+
+  fetch("http://localhost:3000/api/population")
+    .then(res => res.text())
+    .then(data => {
+      const output = document.getElementById("output");
+      const lines = data.split("\n");
+      const rows = lines.slice(1).map(line => line.split(","));
+      const latestRows = {};
+
+      for (let i = 0; i < rows.length; i++) {
+        const [countryName, countryCode, year, value] = rows[i];
+        if (!latestRows[countryCode] || parseInt(year) > parseInt(latestRows[countryCode].year)) {
+          latestRows[countryCode] = { countryName, year, value };
+        }
+      }
+
+      const allCountries = Object.values(latestRows);
+      const top5 = allCountries.sort((a, b) => b.value - a.value).slice(0, 5);
+
+      output.innerText = "🌍 The 5 most populous countries:\n\n" + top5.map(c =>
+        `${c.countryName} (${c.year}): ${parseInt(c.value).toLocaleString()}`
+      ).join("\n");
+    })
+    .catch(err => {
+      const output = document.getElementById("output");
+      output.innerText = "❌ Veri alınamadı: " + err.message;
+    });
 };
 
-const notifications = [
-  "🌡️ Hava Durumu: Bugün sıcaklık +2°C",
-  "😔 Ruh Hali: İnsanlar genel olarak yorgun.",
-  "🔥 Kriminal Olaylar: Suç oranı %3 arttı.",
-  "🍀 Şans Yüzdesi: Bugün %47 şanslısınız!"
-];
 
-function startNotifications() {
-  setInterval(() => {
-    createNotification(notifications[Math.floor(Math.random() * notifications.length)]);
-  }, 10000);
+  
+
+
+
+document.getElementById("downloadBtn").addEventListener("click", () => {
+  const name = document.getElementById("name").value;
+  const birthDate = document.getElementById("birthDate").value;
+  const ethnicity = document.getElementById("ethnicity").value;
+  const country = document.getElementById("country").value;
+  const insight = document.getElementById("insight-text").innerText;
+
+  const pdf = new window.jspdf.jsPDF();
+  pdf.setFont("courier");
+  pdf.setTextColor(0, 255, 0);
+  pdf.setFontSize(12);
+
+  pdf.text("[GENETIC HUMAN ID CARD]", 20, 20);
+  pdf.text(`Name: ${name}`, 20, 30);
+  pdf.text(`Birth Date: ${birthDate}`, 20, 40);
+  pdf.text(`Ethnicity: ${ethnicity}`, 20, 50);
+  pdf.text(`Country: ${country}`, 20, 60);
+  pdf.text(`Universal Entry ID: GEN-${Math.floor(Math.random() * 100000)}`, 20, 70);
+  pdf.text("Global Status Snapshot:", 20, 90);
+  pdf.text(document.getElementById("output").innerText, 20, 100);
+  pdf.text("Genetic AI Insight:", 20, 130);
+  pdf.text(insight, 20, 140);
+
+  pdf.save("GenID_Certificate.pdf");
+});
+// 🔐 GPT tabanlı gerçek yapay zekâ sistemi
+async function fetchAIInsight(inputText) {
+  const response = await fetch("https://humanstocklive-1.onrender.com/api/gp", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ prompt: inputText })
+  });
+
+  const data = await response.json();
+  const output = data.output;
+  document.getElementById("insight-text").innerText = output;
 }
 
-function createNotification(text) {
-  const notification = document.createElement('div');
-  notification.className = 'notification';
-  notification.innerText = text;
-  document.body.appendChild(notification);
+// Form gönderimi yapıldığında GPT çağrısı yapılsın
 
-  setTimeout(() => {
-    notification.remove();
-  }, 7000);
-}
+// Mevcut submit event listener'ı iptal edildiği için yeni listener:
+document.getElementById("userForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const name = document.getElementById("name").value;
+  const birthDate = document.getElementById("birthDate").value;
+  const ethnicity = document.getElementById("ethnicity").value;
+  const country = document.getElementById("country").value;
 
-const crimes = [
-  "🕵️ 14 Kasım 1889 — Sherlock Holmes yayımlandı.",
-  "🔪 1 Mart 1932 — Lindbergh bebeği kaçırıldı.",
-  "⚖️ 20 Kasım 1945 — Nürnberg Duruşmaları başladı.",
-  "🔥 26 Nisan 1986 — Çernobil Nükleer Felaketi.",
-  "⚰️ 11 Eylül 2001 — Dünya Ticaret Merkezi saldırısı.",
-  "💥 7 Temmuz 2005 — Londra Metro Bombalamaları."
-];
+  const prompt = `Adı: ${name}, Doğum Tarihi: ${birthDate}, Etnik köken: ${ethnicity}, Ülke: ${country}. Bu kişiye ait genetik uyum, risk, potansiyel ve güçlü yönler hakkında yorum yap.`;
 
-function startCrimeReminders() {
-  setInterval(() => {
-    createNotification(crimes[Math.floor(Math.random() * crimes.length)]);
-  }, 30000);
-}
-
-function loadNews() {
-  fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://rss.cnn.com/rss/edition.rss'))
-    .then(response => response.json())
-    .then(data => {
-      const parser = new DOMParser();
-      const xml = parser.parseFromString(data.contents, "text/xml");
-      const items = xml.querySelectorAll("item");
-      const newsContent = document.getElementById('news-content');
-      newsContent.innerHTML = '';
-
-      for (let i = 0; i < 5; i++) {
-        const title = items[i].querySelector("title").textContent;
-        const p = document.createElement('p');
-        p.innerHTML = "📰 " + title;
-        newsContent.appendChild(p);
-      }
-    });
-}
+  await fetchAIInsight(prompt);
+  await locateCountry(country);
+});
 </script>
-
 <script src="script.js"></script>
-
 </body>
 </html>
